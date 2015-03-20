@@ -52,21 +52,23 @@
 
 (struct snapshot (before tile after changed?) #:transparent)
 
+
 (define (board-iter f board)
   (let iter ([tried '()]
-             [to-try board]
-             [changed? #f])
+             [to-try board])
     (if (null? to-try)
-        (values tried changed?)
-        (let ((return (f tried (car to-try) (cdr to-try))))
+        tried
+        (let ((return (f tried 
+                         (car to-try) 
+                         (cdr to-try))))
           (if (snapshot-changed? return)
               (iter '() 
                     (append (snapshot-before return) 
-                            (cons (snapshot-tile return) (snapshot-after return)))
-                    #t)
-              (iter (append (snapshot-before return) (list (snapshot-tile return)))
-                    (snapshot-after return)
-                    (or (snapshot-changed? return) changed?)))))))  
+                            (cons (snapshot-tile return) 
+                                  (snapshot-after return))))
+              (iter (append (snapshot-before return) 
+                            (list (snapshot-tile return)))
+                    (snapshot-after return)))))))  
 
 
          
@@ -85,4 +87,4 @@
    (list 0 1 0 4 3 6 0 5 0)))
 
 
-(provide test-board all tile-solved? transform transformflat tile get-row get-col get-box make-tile transform-tile board-iter)
+(provide test-board all tile-solved? transform transformflat tile get-row get-col get-box make-tile transform-tile snapshot board-iter)
