@@ -27,11 +27,40 @@
 (define (get-col pos) (- pos (* 9 (get-row pos))))
 (define (get-box pos) (+ (quotient (get-col pos) 3) (* 3 (quotient (get-row pos) 3))))
 
-(define (make-tile value pos) (if (equal? value 0) (tile 1 2 3 all) (tile 2 4 5 (set value))))
-                               
+(define (make-tile value pos) 
+  (if (equal? value 0) 
+      (tile (get-row pos) 
+            (get-col pos) 
+            (get-box pos) all) 
+      (tile (get-row pos) 
+            (get-col pos) 
+            (get-box pos) (set value))))
+
+(define (map-with-index f lst) 
+   (let iter ([index-list (range 0 (length lst))]
+              [in-list lst]
+              [out-list (list)])
+     (if (null? in-list)
+         (reverse out-list)
+         (iter (cdr index-list)
+               (cdr in-list)
+               (cons (f (car in-list) (car index-list)) out-list)))))
+  
 
 (define (transform-tile matrix) 
-  (map make-tile (flatten matrix)))
+  (map-with-index make-tile (flatten matrix)))
+
+(define (test-board)
+  (list
+   (list 0 2 0 1 7 8 0 3 0)
+   (list 0 4 0 3 0 2 0 9 0)
+   (list 1 0 0 0 0 0 0 0 6)
+   (list 0 0 8 6 0 3 5 0 0)
+   (list 3 0 0 0 0 0 0 0 4)
+   (list 0 0 6 7 0 9 2 0 0)
+   (list 9 0 0 0 0 0 0 0 2)
+   (list 0 8 0 9 0 1 0 6 0)
+   (list 0 1 0 4 3 6 0 5 0)))
 
 
-(provide all tile-solved? transform transformflat tile get-row get-col get-box)
+(provide test-board all tile-solved? transform transformflat tile get-row get-col get-box make-tile transform-tile)
