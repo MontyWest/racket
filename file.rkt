@@ -50,6 +50,27 @@
 (define (transform-tile matrix) 
   (map-with-index make-tile (flatten matrix)))
 
+(struct snapshot (before tile after changed?) #:transparent)
+
+(define (board-iter f board)
+  (define (iter tried to-try changed?)
+    (if (null? to-try)
+        (values tried changed?)
+        (let ((return (f tried (car to-try) (cdr to-try))))
+          (if (snapshot-changed? return)
+              (iter '() 
+                    (append (snapshot-before return) 
+                            (cons (snapshot-tile return) (snapshot-after return)))
+                    #t)
+              (iter (append (snapshot-before return) (list (snapshot-tile return)))
+                    (snapshot-after return)
+                    (or (snapshot-changed? return) changed?))))))
+  (iter '() board #f))  
+
+
+         
+
+
 (define (test-board)
   (list
    (list 0 2 0 1 7 8 0 3 0)
@@ -63,4 +84,4 @@
    (list 0 1 0 4 3 6 0 5 0)))
 
 
-(provide test-board all tile-solved? transform transformflat tile get-row get-col get-box make-tile transform-tile)
+(provide test-board all tile-solved? transform transformflat tile get-row get-col get-box make-tile transform-tile board-iter)
