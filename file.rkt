@@ -23,6 +23,10 @@
 
 (struct tile (row col box values) #:transparent)
 
+(define (tile-relevant? tile row col box)
+  (and (or (equal? row (tile-row tile)) (equal? col (tile-col tile)) (equal? box (tile-box tile)))
+       (not (and (equal? row (tile-row tile)) (equal? col (tile-col tile)) (equal? box (tile-box tile))))))
+
 (define (get-row pos) (quotient pos 9))
 (define (get-col pos) (- pos (* 9 (get-row pos))))
 (define (get-box pos) (+ (quotient (get-col pos) 3) (* 3 (quotient (get-row pos) 3))))
@@ -52,26 +56,51 @@
 
 (struct snapshot (before tile after changed?) #:transparent)
 
+(struct boardchanged (board changed?))
 
 (define (board-iter f board)
   (let iter ([tried '()]
-             [to-try board])
+             [to-try board]
+             [bchange? #f])
     (if (null? to-try)
-        tried
+        (boardchanged tried bchange?)
         (let ((return (f tried 
                          (car to-try) 
                          (cdr to-try))))
-          (if (snapshot-changed? return)
-              (iter '() 
-                    (append (snapshot-before return) 
-                            (cons (snapshot-tile return) 
-                                  (snapshot-after return))))
-              (iter (append (snapshot-before return) 
-                            (list (snapshot-tile return)))
-                    (snapshot-after return)))))))  
+          (iter (append (snapshot-before return) 
+                        (list (snapshot-tile return)))
+                (snapshot-after return)
+                (snapshot-changed? return))))))
+
+(define (remove row col box val)
+  (lambda (before oldtile after)
+    (if (tile-relevant? oldtile row col box)
+        (let ((newtile (tile 
+                        (tile-row oldtile)
+                        (tile-col oldtile)
+                        (tile-box oldtile)
+                        (set-remove (tile-values oldtile) val))))
+             (snapshot before
+                       newtile
+                       after
+                       (not (equal? (tile-values oldtile) (tile-values newtile)))))
+        (snapshot before oldtile after #f))))
 
 
-         
+(define (focus before focustile after)
+  (if (equal? 1 (set-count (tile-values focustile)))
+  (let ((removelamb (remove (tile-row focustile)
+                            (tile-col focustile)
+                            (tile-box focustile)
+                            (set-first (tile-values focustile)))))
+     (let ((before-bc (board-iter removelamb before))
+           (after-bc (board-iter removelamb after)))
+       (snapshot (boardchanged-board before-bc)
+                 focustile
+                 (boardchanged-board after-bc)
+                 (or (boardchanged-changed? before-bc) (boardchanged-changed? after-bc)))))
+  (snapshot before focustile after #f)))
+   
 
 
 (define (test-board)
