@@ -72,6 +72,17 @@
                 (snapshot-after return)
                 (snapshot-changed? return))))))
 
+(define (board-acc f board)
+  (let iter ([tried '()]
+             [to-try board]
+             [acc '()])
+    (if (null? to-try)
+        acc
+        (let ((trying (car to-try) (return (f trying))))
+          (iter (append tried (list trying))
+                (cdr to-try)
+                (append acc return))))))
+
 (define (remove row col box val)
   (lambda (before oldtile after)
     (if (tile-relevant? oldtile row col box)
@@ -86,6 +97,7 @@
                        (not (equal? (tile-values oldtile) (tile-values newtile)))))
         (snapshot before oldtile after #f))))
 
+(define (uniqueval row col box values)
 
 (define (focus before focustile after)
   (if (equal? 1 (set-count (tile-values focustile)))
