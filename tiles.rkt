@@ -1,40 +1,77 @@
 #lang racket
 
-(require rackunit "file.rkt")
+(define all (set 1 2 3 4 5 6 7 8 9))
 
-(check-equal? all (set 1 2 3 4 5 6 7 8 9) "Test all")
-(check-equal? (tile-solved? all) #f "Testing that more that one option returns not solved")
-(check-equal? (tile-solved? (set 3)) #t "Testing singleton returns solved")
+(define (tile-solved? t) (= 1 (set-count t)))
+
+(define (transform matrix) 
+  (map 
+   (lambda (lst) 
+     (map
+      (lambda (num) (
+         if (equal? num 0) all (set num))
+        )
+      lst))
+   matrix))
+
+(define (transformflat matrix) 
+  (map 
+      (lambda (num) (
+         if (equal? num 0) all (set num))
+        )
+   (flatten matrix)))
+
+(struct tile (row col box values) #:transparent)
+
+(define (tile-relevant? tile row col box)
+  (and (or (equal? row (tile-row tile)) (equal? col (tile-col tile)) (equal? box (tile-box tile)))
+       (not (and (equal? row (tile-row tile)) (equal? col (tile-col tile)) (equal? box (tile-box tile))))))
+
+(define (get-row pos) (quotient pos 9))
+(define (get-col pos) (- pos (* 9 (get-row pos))))
+(define (get-box pos) (+ (quotient (get-col pos) 3) (* 3 (quotient (get-row pos) 3))))
+
+(define (make-tile value pos) 
+  (if (equal? value 0) 
+      (tile (get-row pos) 
+            (get-col pos) 
+            (get-box pos) all) 
+      (tile (get-row pos) 
+            (get-col pos) 
+            (get-box pos) (set value))))
+
+(define (map-with-index f lst) 
+   (let iter ([index-list (range 0 (length lst))]
+              [in-list lst]
+              [out-list (list)])
+     (if (null? in-list)
+         (reverse out-list)
+         (iter (cdr index-list)
+               (cdr in-list)
+               (cons (f (car in-list) (car index-list)) out-list)))))
+  
+
+(define (transform-tile matrix) 
+  (map-with-index make-tile (flatten matrix)))
 
 
-(check-equal? (transform (list (list 1 2 0) (list 0 5 0) (list 7 0 9))) 
-              (list (list (set 1) (set 2) (set 1 2 3 4 5 6 7 8 9))
-                    (list (set 1 2 3 4 5 6 7 8 9) (set 5) (set 1 2 3 4 5 6 7 8 9))
-                    (list (set 7) (set 1 2 3 4 5 6 7 8 9) (set 9)))
-              "Testing transforming small grid into nest lists of sets")
+   
 
-(check-equal? (transformflat (list (list 1 2 0) (list 0 5 0) (list 7 0 9))) 
-              (list (set 1) (set 2) (set 1 2 3 4 5 6 7 8 9)
-                    (set 1 2 3 4 5 6 7 8 9) (set 5) (set 1 2 3 4 5 6 7 8 9)
-                    (set 7) (set 1 2 3 4 5 6 7 8 9) (set 9))
-              "Testing transforming small grid into flat list of sets")
 
-(check-equal? (get-row 80) 8 "Testing tile 80 is in row 8")
-(check-equal? (get-row 54) 6 "Testing tile 54 is in row 6")
-(check-equal? (get-row 4) 0 "Testing tile 4 is in row 0")
+(define (test-matrix)
+  (list
+   (list 0 2 0 1 7 8 0 3 0)
+   (list 0 4 0 3 0 2 0 9 0)
+   (list 1 0 0 0 0 0 0 0 6)
+   (list 0 0 8 6 0 3 5 0 0)
+   (list 3 0 0 0 0 0 0 0 4)
+   (list 0 0 6 7 0 9 2 0 0)
+   (list 9 0 0 0 0 0 0 0 2)
+   (list 0 8 0 9 0 1 0 6 0)
+   (list 0 1 0 4 3 6 0 5 0)))
 
-(check-equal? (get-col 80) 8 "Testing tile 80 is in col 8")
-(check-equal? (get-col 54) 0 "Testing tile 55 is in col 0")
-(check-equal? (get-col 4) 4 "Testing tile 4 is in col 4")
-
-(check-equal? (get-box 80) 8 "Testing tile 80 is in box 8")
-(check-equal? (get-box 54) 6 "Testing tile 55 is in box 6")
-(check-equal? (get-box 4) 1 "Testing tile 4 is in box 1")
-
-(check-equal? (make-tile 0 54) (tile 6 0 6 all) "Testing make tile deals with 0")
-(check-equal? (make-tile 3 4) (tile 0 4 1 (set 3)) "Testing make tile deals with values")
-
-(check-equal? (transform-tile (test-board)) (list
+(define (test-board)
+  (list
  (tile 0 0 0 (set 1 2 3 4 5 6 7 8 9))
  (tile 0 1 0 (set 2))
  (tile 0 2 0 (set 1 2 3 4 5 6 7 8 9))
@@ -115,4 +152,7 @@
  (tile 8 5 7 (set 6))
  (tile 8 6 8 (set 1 2 3 4 5 6 7 8 9))
  (tile 8 7 8 (set 5))
- (tile 8 8 8 (set 1 2 3 4 5 6 7 8 9))) "Testing board to tiles")
+ (tile 8 8 8 (set 1 2 3 4 5 6 7 8 9))))
+
+
+(provide test-matrix test-board all tile-solved? transform transformflat tile tile-row tile-col tile-box tile-values get-row get-col get-box tile-relevant? make-tile transform-tile)
