@@ -3,6 +3,6 @@ Sudoku solver in Racket
 
 By Monty West - mwest06
 
-transform function can be found in tiles.rkt, unit test in tiles-test.rkt
+(transform matrix) function can be found in tiles.rkt, unit test in tiles-test.rkt (using sudoku puzzle in spec)
 
-solve function can be found in solver.rkt, unit test in solver-test.rkt
+(solve matrix) function can be found in solver.rkt, unit test in solver-test.rkt (using sudoku puzzle found in spec)
