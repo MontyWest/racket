@@ -11,7 +11,7 @@
               (list (list (set 1) (set 2) (set 1 2 3 4 5 6 7 8 9))
                     (list (set 1 2 3 4 5 6 7 8 9) (set 5) (set 1 2 3 4 5 6 7 8 9))
                     (list (set 7) (set 1 2 3 4 5 6 7 8 9) (set 9)))
-              "Testing transforming small grid into nest lists of sets")
+              "Testing transforming small grid into nested lists of sets")
 
 (check-equal? (transformflat (list (list 1 2 0) (list 0 5 0) (list 7 0 9))) 
               (list (set 1) (set 2) (set 1 2 3 4 5 6 7 8 9)
