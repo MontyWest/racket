@@ -35,3 +35,23 @@
 (check-equal? (make-tile 3 4) (tile 0 4 1 (set 3)) "Testing make tile deals with values")
 
 (check-equal? (transform-tile (test-matrix)) (test-board) "Testing matrix to tile board")
+
+(define (test-matrix-sets)
+  (list
+   (list all 2 all 1 7 8 all 3 all)
+   (list all 4 all 3 all 2 all 9 all)
+   (list 1 all all all all all all all 6)
+   (list all all 8 6 all 3 5 all all)
+   (list 3 all all all all all all all 4)
+   (list all all 6 7 all 9 2 all all)
+   (list 9 all all all all all all all 2)
+   (list all 8 all 9 all 1 all 6 all)
+   (list all 1 all 4 3 6 all 5 all)))
+
+(check-equal? (untransform-tile (test-board))
+              (test-matrix-sets)
+              "Checking that untransform words")
+
+(check-equal? (untransform-tile (transform-tile (test-matrix)))
+              (test-matrix-sets)
+              "Checking untransform is converse to transform")

@@ -54,7 +54,32 @@
 (define (transform-tile matrix) 
   (map-with-index make-tile (flatten matrix)))
 
+(define (tile-values-to-element tile)
+  (let ((values (tile-values tile)))
+    (if (equal? 1 (set-count values))
+        (set-first values)
+        values)))
 
+(define (extract-row-values row board)
+  (let iter ([car-tile (car board)]
+             [part-board (cdr board)]
+             [acc '()])
+    (let ((new-acc (if (equal? row (tile-row car-tile))
+                       (cons (tile-values-to-element car-tile) acc)
+                       acc)))
+      (if (null? part-board)
+          (reverse new-acc)
+          (iter (car part-board) 
+                  (cdr part-board)
+                  new-acc)))))
+    
+
+(define (untransform-tile board)
+  (let iter ([matrix (list)]
+             [row 8])
+    (if (> 0 row)
+        matrix
+        (iter (cons (extract-row-values row board) matrix) (- row 1)))))
    
 
 
@@ -155,4 +180,4 @@
  (tile 8 8 8 (set 1 2 3 4 5 6 7 8 9))))
 
 
-(provide test-matrix test-board all tile-solved? transform transformflat tile tile-row tile-col tile-box tile-values get-row get-col get-box tile-relevant? make-tile transform-tile)
+(provide test-matrix test-board all tile-solved? transform transformflat tile tile-row tile-col tile-box tile-values get-row get-col get-box tile-relevant? make-tile transform-tile untransform-tile)
