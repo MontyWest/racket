@@ -33,7 +33,7 @@ $ racket
 ```
 
 - You can define your own sudoku. Use a list of lists that represent the rows, with unknowns as '0' e.g.
-'''
+```
 '((2 4 0 0 3 0 0 0 8)
   (0 0 0 5 8 4 0 0 0)
 	...)
